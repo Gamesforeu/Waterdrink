@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H2O Glow - Premium Water Reminder</title>
+    
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkgyTyBHbG93IC0gV2F0ZXIgUmVtaW5kZXIiLAogICJzaG9ydF9uYW1lIjogIkgyT0dsb3ciLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBmMTcyYSIsCiAgInRoZW1lX2NvbG9yIjogIiMwZjE3MmEiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2ltZy5pY29uczgubmV0L2ZsYXQvNTEyL2V4dGVybmFsLXdhdGVyLWdsYXNzLWhvbWUtYWN0aXZpdGllcy1mbGF0LWZsYXQtaW9uYW5zaC5wbmciLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIKICAgIH0KICBdCn0=">
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+        }
+        /* Animated Water Effect inside Glass */
+        .water-wave {
+            transition: height 0.5s ease-in-out;
+        }
+        .water-wave::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 38%;
+            transform: translate(-50%, -75%) rotate(0deg);
+            animation: spin 8s linear infinite;
+        }
+        @keyframes spin {
+            100% { transform: translate(-50%, -75%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen flex flex-col items-center justify-between p-6">
+
+    <header class="w-full max-w-md flex justify-between items-center py-4">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-500/20 p-2.5 rounded-2xl border border-blue-500/30 backdrop-blur-xl">
+                <i class="fa-solid fa-droplet text-blue-400 text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">H2O Glow</h1>
+                <p class="text-xs text-slate-400">Stay hydrated, stay fresh</p>
+            </div>
+        </div>
+        <button id="pwaBtn" class="hidden bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-lg shadow-blue-500/20 transition-all">
+            Install App
+        </button>
+    </header>
+
+    <main class="w-full max-w-md flex-1 flex flex-col items-center justify-center my-6 gap-8">
+        
+        <div class="relative w-52 h-72 border-4 border-slate-700/50 bg-slate-800/20 backdrop-blur-md rounded-b-3xl rounded-t-lg shadow-2xl flex items-end overflow-hidden p-1">
+            <div class="absolute inset-0 bg-gradient-to-t from-blue-500/10 to-transparent pointer-events-none"></div>
+            
+            <div id="waterLevel" class="water-wave relative w-full bg-gradient-to-t from-blue-600 to-cyan-400 rounded-b-2xl" style="height: 0%;"></div>
+            
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span id="progressPercent" class="text-4xl font-extrabold text-white drop-shadow-md">0%</span>
+                <span id="currentIntake" class="text-sm text-slate-300 font-medium mt-1">0 / 2000 ml</span>
+            </div>
+        </div>
+
+        <div class="w-full bg-slate-800/40 border border-slate-700/50 rounded-3xl p-6 backdrop-blur-xl shadow-xl flex flex-col gap-5">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-regular fa-clock text-cyan-400"></i>
+                    <span class="text-sm font-semibold text-slate-300">Reminder Interval</span>
+                </div>
+                <select id="intervalSelect" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm font-medium text-slate-200 focus:outline-none focus:border-blue-500">
+                    <option value="1">Every 1 Minute (Test)</option>
+                    <option value="30">Every 30 Minutes</option>
+                    <option value="60" selected>Every 1 Hour</option>
+                    <option value="120">Every 2 Hours</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button id="addWaterBtn" class="cursor-pointer bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-blue-500/20 flex items-center justify-center gap-2 transform active:scale-95 transition-all">
+                    <i class="fa-solid fa-plus text-lg"></i> Drink 250ml
+                </button>
+                <button id="resetBtn" class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-4 px-6 rounded-2xl border border-slate-700 flex items-center justify-center gap-2 transform active:scale-95 transition-all">
+                    <i class="fa-solid fa-rotate-right"></i> Reset Today
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="w-full max-w-md text-center py-2">
+        <p id="timerStatus" class="text-xs text-slate-400 font-medium">
+            <i class="fa-solid fa-bell text-blue-400 mr-1 animate-pulse"></i> Next reminder will trigger based on your interval.
+        </p>
+    </footer>
+
+    <script>
+        // Web Audio API for a futuristic notification chime
+        function playPremiumChime() {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = context.createOscillator();
+            const gain = context.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, context.currentTime); // D5
+            osc.frequency.setValueAtTime(880, context.currentTime + 0.1); // A5
+            
+            gain.gain.setValueAtTime(0.3, context.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.4);
+            
+            osc.connect(gain);
+            gain.connect(context.destination);
+            
+            osc.start();
+            osc.stop(context.currentTime + 0.4);
+        }
+
+        // State Management
+        let currentIntake = 0;
+        const targetIntake = 2000; // 2L Target
+        let reminderTimer = null;
+
+        // DOM Elements
+        const waterLevel = document.getElementById('waterLevel');
+        const progressPercent = document.getElementById('progressPercent');
+        const currentIntakeText = document.getElementById('currentIntake');
+        const addWaterBtn = document.getElementById('addWaterBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const intervalSelect = document.getElementById('intervalSelect');
+        const timerStatus = document.getElementById('timerStatus');
+        const pwaBtn = document.getElementById('pwaBtn');
+
+        // Update UI Function
+        function updateUI() {
+            const percentage = Math.min((currentIntake / targetIntake) * 100, 100);
+            waterLevel.style.height = `${percentage}%`;
+            progressPercent.innerText = `${Math.round(percentage)}%`;
+            currentIntakeText.innerText = `${currentIntake} / ${targetIntake} ml`;
+            
+            // Save state to localStorage
+            localStorage.setItem('waterIntake', currentIntake);
+        }
+
+        // Add Water Logic
+        addWaterBtn.addEventListener('click', () => {
+            currentIntake += 250;
+            updateUI();
+            
+            // Subtle click vibration if available on mobile PWA
+            if (navigator.vibrate) navigator.vibrate(20);
+        });
+
+        // Reset Logic
+        resetBtn.addEventListener('click', () => {
+            if(confirm("Kya aap aaj ka progress reset karna chahte hain?")) {
+                currentIntake = 0;
+                updateUI();
+            }
+        });
+
+        // Push Notification & Reminder Logic
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission();
+            }
+        }
+
+        function triggerReminder() {
+            playPremiumChime();
+            
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("Paani Peene Ka Time Ho Gaya! 💧", {
+                    body: "Ek glass paani pijiye aur khud ko hydrate rakhiye.",
+                    icon: "https://img.icons8.com/flat/512/external-water-glass-home-activities-flat-flat-ionansh.png"
+                });
+            } else {
+                alert("Reminder: Ek glass paani pijiye! 💧");
+            }
+        }
+
+        function startTimer() {
+            if (reminderTimer) clearInterval(reminderTimer);
+            
+            const minutes = parseInt(intervalSelect.value);
+            const ms = minutes * 60 * 1000;
+            
+            reminderTimer = setInterval(() => {
+                triggerReminder();
+            }, ms);
+
+            timerStatus.innerHTML = `<i class="fa-solid fa-bell text-blue-400 mr-1"></i> Reminders active: Every ${minutes} minute(s).`;
+        }
+
+        intervalSelect.addEventListener('change', () => {
+            startTimer();
+            requestNotificationPermission();
+        });
+
+        // Load Saved Progress on Startup
+        window.addEventListener('load', () => {
+            const savedData = localStorage.getItem('waterIntake');
+            if (savedData) {
+                currentIntake = parseInt(savedData);
+                updateUI();
+            }
+            startTimer();
+        });
+
+
+        // ==========================================
+        //  PWA FUNCTIONALITY (Service Worker & Install)
+        // ==========================================
+
+        // Service Worker Register Inline
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    const CACHE_NAME = 'h2o-glow-v1';
+                    const ASSETS = [
+                        '/',
+                        '/index.html'
+                    ];
+                    self.addEventListener('install', (e) => {
+                        e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
+                    });
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(swUrl).catch(err => console.log('SW registration failed', err));
+            });
+        }
+
+        // Handle PWA Installation prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            pwaBtn.classList.remove('hidden'); // Show install button
+        });
+
+        pwaBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    pwaBtn.classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        });
+    </script>
+</body>
+</html>
