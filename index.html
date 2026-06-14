@@ -3,262 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H2O Glow - Premium Water Reminder</title>
+    <title>H2O Glow Pro - Premium Water Tracker</title>
     
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkgyTyBHbG93IC0gV2F0ZXIgUmVtaW5kZXIiLAogICJzaG9ydF9uYW1lIjogIkgyT0dsb3ciLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBmMTcyYSIsCiAgInRoZW1lX2NvbG9yIjogIiMwZjE3MmEiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2ltZy5pY29uczgubmV0L2ZsYXQvNTEyL2V4dGVybmFsLXdhdGVyLWdsYXNzLWhvbWUtYWN0aXZpdGllcy1mbGF0LWZsYXQtaW9uYW5zaC5wbmciLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIKICAgIH0KICBdCn0=">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            background: radial-gradient(circle at top right, #1e293b, #090d16);
         }
-        /* Animated Water Effect inside Glass */
         .water-wave {
-            transition: height 0.5s ease-in-out;
+            transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .water-wave::after {
             content: "";
             position: absolute;
             top: 0;
             left: 50%;
-            width: 200%;
-            height: 200%;
-            background: rgba(255, 255, 255, 0.1);
+            width: 220%;
+            height: 220%;
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 38%;
-            transform: translate(-50%, -75%) rotate(0deg);
-            animation: spin 8s linear infinite;
+            transform: translate(-50%, -85%) rotate(0deg);
+            animation: spin 7s linear infinite;
         }
         @keyframes spin {
-            100% { transform: translate(-50%, -75%) rotate(360deg); }
+            100% { transform: translate(-50%, -85%) rotate(360deg); }
+        }
+        /* Custom 3D Avatar Frame styling */
+        .avatar-container {
+            perspective: 800px;
+        }
+        .avatar-3d-card {
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+        }
+        .avatar-3d-card:hover {
+            transform: rotateY(15deg) rotateX(5deg);
         }
     </style>
 </head>
-<body class="text-slate-200 min-h-screen flex flex-col items-center justify-between p-6">
+<body class="text-slate-200 min-h-screen flex flex-col items-center justify-between p-4 sm:p-6 select-none">
 
-    <header class="w-full max-w-md flex justify-between items-center py-4">
-        <div class="flex items-center gap-3">
-            <div class="bg-blue-500/20 p-2.5 rounded-2xl border border-blue-500/30 backdrop-blur-xl">
-                <i class="fa-solid fa-droplet text-blue-400 text-xl"></i>
+    <div id="onboardingScreen" class="w-full max-w-md my-auto bg-slate-900/60 border border-slate-800 rounded-[2.5rem] p-8 backdrop-blur-2xl shadow-2xl flex flex-col gap-6 transform transition-all duration-500">
+        <div class="text-center">
+            <div class="inline-flex bg-blue-500/10 p-4 rounded-3xl border border-blue-500/20 mb-4 animate-bounce">
+                <i class="fa-solid fa-glass-water text-blue-400 text-3xl"></i>
             </div>
+            <h2 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-cyan-400 to-indigo-400 bg-clip-text text-transparent">Welcome to H2O Glow Pro</h2>
+            <p class="text-sm text-slate-400 mt-1">Set up your profile for intelligent hydration routing</p>
+        </div>
+
+        <div class="space-y-4">
             <div>
-                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">H2O Glow</h1>
-                <p class="text-xs text-slate-400">Stay hydrated, stay fresh</p>
-            </div>
-        </div>
-        <button id="pwaBtn" class="hidden bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-lg shadow-blue-500/20 transition-all">
-            Install App
-        </button>
-    </header>
-
-    <main class="w-full max-w-md flex-1 flex flex-col items-center justify-center my-6 gap-8">
-        
-        <div class="relative w-52 h-72 border-4 border-slate-700/50 bg-slate-800/20 backdrop-blur-md rounded-b-3xl rounded-t-lg shadow-2xl flex items-end overflow-hidden p-1">
-            <div class="absolute inset-0 bg-gradient-to-t from-blue-500/10 to-transparent pointer-events-none"></div>
-            
-            <div id="waterLevel" class="water-wave relative w-full bg-gradient-to-t from-blue-600 to-cyan-400 rounded-b-2xl" style="height: 0%;"></div>
-            
-            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span id="progressPercent" class="text-4xl font-extrabold text-white drop-shadow-md">0%</span>
-                <span id="currentIntake" class="text-sm text-slate-300 font-medium mt-1">0 / 2000 ml</span>
-            </div>
-        </div>
-
-        <div class="w-full bg-slate-800/40 border border-slate-700/50 rounded-3xl p-6 backdrop-blur-xl shadow-xl flex flex-col gap-5">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <i class="fa-regular fa-clock text-cyan-400"></i>
-                    <span class="text-sm font-semibold text-slate-300">Reminder Interval</span>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Your Name</label>
+                <div class="relative">
+                    <i class="fa-regular fa-user absolute left-4 top-3.5 text-slate-500"></i>
+                    <input type="text" id="usernameInput" placeholder="Enter your name" class="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-11 pr-4 py-3 text-sm font-medium focus:outline-none focus:border-blue-500 transition-all text-white">
                 </div>
-                <select id="intervalSelect" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm font-medium text-slate-200 focus:outline-none focus:border-blue-500">
-                    <option value="1">Every 1 Minute (Test)</option>
-                    <option value="30">Every 30 Minutes</option>
-                    <option value="60" selected>Every 1 Hour</option>
-                    <option value="120">Every 2 Hours</option>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Select Gender</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" onclick="selectGender('male')" id="genderMale" class="border border-slate-800 bg-slate-950/40 rounded-2xl py-3 text-sm font-semibold flex items-center justify-center gap-2 hover:border-blue-500/50 transition-all cursor-pointer">
+                        <i class="fa-solid fa-mars text-blue-400"></i> Male
+                    </button>
+                    <button type="button" onclick="selectGender('female')" id="genderFemale" class="border border-slate-800 bg-slate-950/40 rounded-2xl py-3 text-sm font-semibold flex items-center justify-center gap-2 hover:border-pink-500/50 transition-all cursor-pointer">
+                        <i class="fa-solid fa-venus text-pink-400"></i> Female
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Daily Target Intake</label>
+                <select id="targetInput" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-blue-500 transition-all text-slate-200">
+                    <option value="1500">1500 ml (Light)</option>
+                    <option value="2000" selected>2000 ml (Recommended)</option>
+                    <option value="2500">2500 ml (Active)</option>
+                    <option value="3000">3000 ml (Athlete)</option>
                 </select>
             </div>
+        </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <button id="addWaterBtn" class="cursor-pointer bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-blue-500/20 flex items-center justify-center gap-2 transform active:scale-95 transition-all">
-                    <i class="fa-solid fa-plus text-lg"></i> Drink 250ml
+        <button id="saveProfileBtn" class="w-full mt-2 cursor-pointer bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-500 hover:opacity-90 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
+            Get Started <i class="fa-solid fa-arrow-right text-sm"></i>
+        </button>
+    </div>
+
+    <div id="mainDashboard" class="hidden w-full max-w-md flex-1 flex flex-col items-center justify-between">
+        
+        <header class="w-full flex justify-between items-center py-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-2xl">
+                    <i id="userGenderIcon" class="fa-solid fa-user text-blue-400 text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
+                        Hey, <span id="displayUsername" class="text-cyan-400">Hydrator</span>! 👋
+                    </h1>
+                    <p class="text-xs text-slate-400">Let's hit your target today</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="pwaBtn" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-md">
+                    <i class="fa-solid fa-download mr-1"></i> Install
                 </button>
-                <button id="resetBtn" class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-4 px-6 rounded-2xl border border-slate-700 flex items-center justify-center gap-2 transform active:scale-95 transition-all">
-                    <i class="fa-solid fa-rotate-right"></i> Reset Today
+                <button id="settingsToggleBtn" class="bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 p-2.5 rounded-xl transition-all cursor-pointer">
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="w-full flex-1 flex flex-col items-center justify-center my-4 gap-6">
+            
+            <div class="avatar-container relative w-56 h-76 bg-slate-900/40 border border-slate-800/80 rounded-[3rem] shadow-2xl flex items-end overflow-hidden p-1.5">
+                <div class="absolute inset-0 bg-gradient-to-t from-blue-500/5 to-transparent pointer-events-none"></div>
+                
+                <div id="waterLevel" class="water-wave relative w-full bg-gradient-to-t from-blue-600 via-cyan-400 to-indigo-400 rounded-b-[2.5rem]" style="height: 0%;"></div>
+                
+                <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
+                    <div class="avatar-3d-card w-full h-full flex flex-col items-center justify-center opacity-90">
+                        <i id="charAvatarView" class="fa-solid fa-user-ninja text-[7.5rem] text-slate-100/20 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] mb-2 transition-all duration-300"></i>
+                        
+                        <span id="progressPercent" class="text-4xl font-black text-white drop-shadow-[0_4px_6px_rgba(0,0,0,0.7)] tracking-tighter">0%</span>
+                        <span id="currentIntake" class="text-xs text-slate-300 font-bold bg-slate-950/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/5 mt-1">0 / 2000 ml</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full bg-slate-900/60 border border-slate-800 rounded-[2rem] p-5 backdrop-blur-xl shadow-xl flex flex-col gap-4">
+                
+                <div class="flex justify-between items-center bg-slate-950/50 p-3 rounded-2xl border border-slate-800/60">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-regular fa-clock text-cyan-400 text-sm"></i>
+                        <span class="text-xs font-bold text-slate-300 uppercase tracking-wide">Reminder Loop</span>
+                    </div>
+                    <select id="intervalSelect" class="bg-slate-900 border border-slate-700/60 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-200 focus:outline-none">
+                        <option value="1">1 Min (Testing Mode)</option>
+                        <option value="30">Every 30 Mins</option>
+                        <option value="60" selected>Every 1 Hour</option>
+                        <option value="120">Every 2 Hours</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="addWaterBtn" class="cursor-pointer bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-500 hover:opacity-95 text-white font-extrabold py-4 px-4 rounded-2xl shadow-lg shadow-blue-500/10 flex items-center justify-center gap-2 transform active:scale-95 transition-all text-sm">
+                        <i class="fa-solid fa-plus text-base animate-pulse"></i> Drink 250ml
+                    </button>
+                    <button id="resetBtn" class="cursor-pointer bg-slate-950 hover:bg-slate-900 text-slate-400 font-bold py-4 px-4 rounded-2xl border border-slate-800 flex items-center justify-center gap-2 transform active:scale-95 transition-all text-sm">
+                        <i class="fa-solid fa-rotate-right"></i> Reset Today
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="w-full text-center py-2">
+            <p id="timerStatus" class="text-[11px] text-slate-400 font-semibold bg-slate-900/40 border border-slate-800/50 inline-block px-4 py-1.5 rounded-full backdrop-blur-sm">
+                <i class="fa-solid fa-bell text-blue-400 mr-1 animate-pulse"></i> Reminders active. Drink up to look premium.
+            </p>
+        </footer>
+    </div>
+
+    <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-6 transition-all">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-[2rem] p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-extrabold text-lg text-white">Application Options</h3>
+                <button id="closeSettingsBtn" class="text-slate-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <hr class="border-slate-800">
+            <div class="space-y-3">
+                <button id="triggerTestNotification" class="w-full bg-slate-950 border border-slate-800 py-3 rounded-xl text-xs font-bold text-slate-300 text-left px-4 flex justify-between items-center hover:border-blue-500 cursor-pointer">
+                    <span>Test Notification Audio System</span>
+                    <i class="fa-solid fa-vial text-blue-400"></i>
+                </button>
+                <button id="logoutAppBtn" class="w-full bg-red-950/20 border border-red-900/30 py-3 rounded-xl text-xs font-bold text-red-400 text-left px-4 flex justify-between items-center hover:bg-red-950/40 cursor-pointer">
+                    <span>Reset User & Logout</span>
+                    <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
             </div>
         </div>
-    </main>
-
-    <footer class="w-full max-w-md text-center py-2">
-        <p id="timerStatus" class="text-xs text-slate-400 font-medium">
-            <i class="fa-solid fa-bell text-blue-400 mr-1 animate-pulse"></i> Next reminder will trigger based on your interval.
-        </p>
-    </footer>
+    </div>
 
     <script>
-        // Web Audio API for a futuristic notification chime
-        function playPremiumChime() {
-            const context = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = context.createOscillator();
-            const gain = context.createGain();
-            
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(587.33, context.currentTime); // D5
-            osc.frequency.setValueAtTime(880, context.currentTime + 0.1); // A5
-            
-            gain.gain.setValueAtTime(0.3, context.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.4);
-            
-            osc.connect(gain);
-            gain.connect(context.destination);
-            
-            osc.start();
-            osc.stop(context.currentTime + 0.4);
-        }
+        // --- CHIME MUSIC GENERATOR (Web Audio API Core Architecture) ---
+        const AudioEngine = {
+            ctx: null,
+            init() {
+                if(!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            playDrinkChime() {
+                this.init();
+                let t = this.ctx.currentTime;
+                this.oscillate(523.25, t, 0.15, 'sine'); // C5
+                this.oscillate(659.25, t + 0.08, 0.2, 'sine'); // E5
+            },
+            playReminderChime() {
+                this.init();
+                let t = this.ctx.currentTime;
+                this.oscillate(440, t, 0.15, 'triangle'); // A4
+                this.oscillate(554.37, t + 0.1, 0.15, 'triangle'); // C#5
+                this.oscillate(659.25, t + 0.2, 0.25, 'sine'); // E5
+            },
+            playTargetFanfare() {
+                this.init();
+                let t = this.ctx.currentTime;
+                // Premium triumph fanfare progression chord
+                this.oscillate(523.25, t, 0.15, 'sine');
+                this.oscillate(659.25, t + 0.1, 0.15, 'sine');
+                this.oscillate(783.99, t + 0.2, 0.15, 'sine');
+                this.oscillate(1046.50, t + 0.3, 0.5, 'sine'); // High C6 Celebration note!
+            },
+            oscillate(freq, start, duration, type) {
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.25, start);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(start);
+                osc.stop(start + duration);
+            }
+        };
 
-        // State Management
-        let currentIntake = 0;
-        const targetIntake = 2000; // 2L Target
+        // --- CORE APPLICATION SYSTEM STATE STATE ---
+        let state = {
+            username: "",
+            gender: "male",
+            targetIntake: 2000,
+            currentIntake: 0,
+            isTargetCelebrated: false
+        };
         let reminderTimer = null;
 
-        // DOM Elements
+        // --- DOM REFERENCE UTILITIES ---
+        const onboardingScreen = document.getElementById('onboardingScreen');
+        const mainDashboard = document.getElementById('mainDashboard');
+        const settingsModal = document.getElementById('settingsModal');
+        
+        const usernameInput = document.getElementById('usernameInput');
+        const targetInput = document.getElementById('targetInput');
+        const displayUsername = document.getElementById('displayUsername');
+        const userGenderIcon = document.getElementById('userGenderIcon');
+        const charAvatarView = document.getElementById('charAvatarView');
+        
         const waterLevel = document.getElementById('waterLevel');
         const progressPercent = document.getElementById('progressPercent');
         const currentIntakeText = document.getElementById('currentIntake');
-        const addWaterBtn = document.getElementById('addWaterBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const intervalSelect = document.getElementById('intervalSelect');
         const timerStatus = document.getElementById('timerStatus');
+        const intervalSelect = document.getElementById('intervalSelect');
         const pwaBtn = document.getElementById('pwaBtn');
 
-        // Update UI Function
-        function updateUI() {
-            const percentage = Math.min((currentIntake / targetIntake) * 100, 100);
-            waterLevel.style.height = `${percentage}%`;
-            progressPercent.innerText = `${Math.round(percentage)}%`;
-            currentIntakeText.innerText = `${currentIntake} / ${targetIntake} ml`;
+        // --- PROFILE ONBOARDING PROCESSORS ---
+        function selectGender(g) {
+            state.gender = g;
+            document.getElementById('genderMale').className = g === 'male' ? 
+                "border-2 border-blue-500 bg-blue-500/10 rounded-2xl py-3 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer" : 
+                "border border-slate-800 bg-slate-950/40 rounded-2xl py-3 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer";
             
-            // Save state to localStorage
-            localStorage.setItem('waterIntake', currentIntake);
+            document.getElementById('genderFemale').className = g === 'female' ? 
+                "border-2 border-pink-500 bg-pink-500/10 rounded-2xl py-3 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer" : 
+                "border border-slate-800 bg-slate-950/40 rounded-2xl py-3 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer";
         }
 
-        // Add Water Logic
-        addWaterBtn.addEventListener('click', () => {
-            currentIntake += 250;
-            updateUI();
-            
-            // Subtle click vibration if available on mobile PWA
-            if (navigator.vibrate) navigator.vibrate(20);
-        });
-
-        // Reset Logic
-        resetBtn.addEventListener('click', () => {
-            if(confirm("Kya aap aaj ka progress reset karna chahte hain?")) {
-                currentIntake = 0;
-                updateUI();
+        document.getElementById('saveProfileBtn').addEventListener('click', () => {
+            const nameInput = usernameInput.value.trim();
+            if(!nameInput) {
+                alert("Please write your username to proceed!");
+                return;
             }
+            state.username = nameInput;
+            state.targetIntake = parseInt(targetInput.value);
+            state.currentIntake = 0;
+            state.isTargetCelebrated = false;
+            
+            localStorage.setItem('h2o_pro_profile', JSON.stringify(state));
+            bootDashboardSystem();
         });
 
-        // Push Notification & Reminder Logic
-        function requestNotificationPermission() {
-            if ("Notification" in window) {
-                Notification.requestPermission();
+        // --- UI INTERFACES UPDATER ---
+        function refreshDashboardUI() {
+            const pct = Math.min((state.currentIntake / state.targetIntake) * 100, 100);
+            waterLevel.style.height = `${pct}%`;
+            progressPercent.innerText = `${Math.round(pct)}%`;
+            currentIntakeText.innerText = `${state.currentIntake} / ${state.targetIntake} ml`;
+            
+            // Check if daily requirement is achieved
+            if(pct >= 100 && !state.isTargetCelebrated) {
+                state.isTargetCelebrated = true;
+                AudioEngine.playTargetFanfare();
+                setTimeout(() => {
+                    alert(`Incredible job, ${state.username}! 🎉 You achieved your 100% hydration profile metric target configuration today!`);
+                }, 400);
+                localStorage.setItem('h2o_pro_profile', JSON.stringify(state));
             }
         }
 
-        function triggerReminder() {
-            playPremiumChime();
+        // --- SYSTEM ENGINE INITIALIZER ---
+        function bootDashboardSystem() {
+            onboardingScreen.classList.add('hidden');
+            mainDashboard.classList.remove('hidden');
             
-            if ("Notification" in window && Notification.permission === "granted") {
-                new Notification("Paani Peene Ka Time Ho Gaya! 💧", {
-                    body: "Ek glass paani pijiye aur khud ko hydrate rakhiye.",
-                    icon: "https://img.icons8.com/flat/512/external-water-glass-home-activities-flat-flat-ionansh.png"
-                });
+            displayUsername.innerText = state.username;
+            
+            // Render Character Matrix View Component
+            if(state.gender === 'female') {
+                userGenderIcon.className = "fa-solid fa-venus text-pink-400 text-xl";
+                charAvatarView.className = "fa-solid fa-person-dress text-[8.5rem] text-pink-400/20 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] mb-2 transition-all duration-300";
             } else {
-                alert("Reminder: Ek glass paani pijiye! 💧");
+                userGenderIcon.className = "fa-solid fa-mars text-blue-400 text-xl";
+                charAvatarView.className = "fa-solid fa-person text-[8.5rem] text-blue-400/20 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] mb-2 transition-all duration-300";
             }
+            
+            refreshDashboardUI();
+            startReminderTimerLoop();
         }
 
-        function startTimer() {
+        // --- DRINK AND LOG IMPLEMENTATION SLOTS ---
+        document.getElementById('addWaterBtn').addEventListener('click', () => {
+            AudioEngine.playDrinkChime();
+            state.currentIntake += 250;
+            if(navigator.vibrate) navigator.vibrate(25);
+            localStorage.setItem('h2o_pro_profile', JSON.stringify(state));
+            refreshDashboardUI();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if(confirm("Are you sure you want to completely clean today's progress log matrix?")) {
+                state.currentIntake = 0;
+                state.isTargetCelebrated = false;
+                localStorage.setItem('h2o_pro_profile', JSON.stringify(state));
+                refreshDashboardUI();
+            }
+        });
+
+        // --- INTERACTIVE NOTIFICATION CRON SIMULATORS ---
+        function startReminderTimerLoop() {
             if (reminderTimer) clearInterval(reminderTimer);
-            
             const minutes = parseInt(intervalSelect.value);
-            const ms = minutes * 60 * 1000;
             
             reminderTimer = setInterval(() => {
-                triggerReminder();
-            }, ms);
+                AudioEngine.playReminderChime();
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification(`Time to Drink, ${state.username}! 💧`, {
+                        body: "Drink a clean glass of water right now to match your glow status settings.",
+                    });
+                } else {
+                    alert(`Hey ${state.username}! 💧 Time to drink water and maintain your healthy glow matrix!`);
+                }
+            }, minutes * 60 * 1000);
 
-            timerStatus.innerHTML = `<i class="fa-solid fa-bell text-blue-400 mr-1"></i> Reminders active: Every ${minutes} minute(s).`;
+            timerStatus.innerHTML = `<i class="fa-solid fa-bell text-blue-400 mr-1"></i> Running loop: Reminders active every ${minutes} min(s).`;
         }
 
         intervalSelect.addEventListener('change', () => {
-            startTimer();
-            requestNotificationPermission();
+            if ("Notification" in window) Notification.requestPermission();
+            startReminderTimerLoop();
         });
 
-        // Load Saved Progress on Startup
-        window.addEventListener('load', () => {
-            const savedData = localStorage.getItem('waterIntake');
-            if (savedData) {
-                currentIntake = parseInt(savedData);
-                updateUI();
+        // --- SYSTEM OPTIONS MODAL ROUTERS ---
+        document.getElementById('settingsToggleBtn').addEventListener('click', () => settingsModal.classList.remove('hidden'));
+        document.getElementById('closeSettingsBtn').addEventListener('click', () => settingsModal.classList.add('hidden'));
+        document.getElementById('triggerTestNotification').addEventListener('click', () => { AudioEngine.playReminderChime(); alert("Notification alert test pinged successfully!"); });
+        
+        document.getElementById('logoutAppBtn').addEventListener('click', () => {
+            if(confirm("This will destroy all local data caches. Clear app memory?")) {
+                localStorage.removeItem('h2o_pro_profile');
+                window.location.reload();
             }
-            startTimer();
         });
 
+        // --- SYSTEM LOAD INTERCEPTOR ENTRYPOINT ---
+        window.addEventListener('load', () => {
+            const cachedProfile = localStorage.getItem('h2o_pro_profile');
+            if(cachedProfile) {
+                state = JSON.parse(cachedProfile);
+                bootDashboardSystem();
+            } else {
+                selectGender('male'); // Default fallback selector styling setup
+            }
+        });
 
-        // ==========================================
-        //  PWA FUNCTIONALITY (Service Worker & Install)
-        // ==========================================
-
-        // Service Worker Register Inline
+        // --- SERVICE WORKER & PWA BINDING LAYER ---
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                const swCode = `
-                    const CACHE_NAME = 'h2o-glow-v1';
-                    const ASSETS = [
-                        '/',
-                        '/index.html'
-                    ];
-                    self.addEventListener('install', (e) => {
-                        e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
-                    });
-                    self.addEventListener('fetch', (e) => {
-                        e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
-                    });
-                `;
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                navigator.serviceWorker.register(swUrl).catch(err => console.log('SW registration failed', err));
-            });
+            navigator.serviceWorker.register('sw.js')
+            .catch(err => console.log('PWA core service stack failed to hook:', err));
         }
 
-        // Handle PWA Installation prompt
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            pwaBtn.classList.remove('hidden'); // Show install button
+            pwaBtn.classList.remove('hidden');
         });
-
         pwaBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    pwaBtn.classList.add('hidden');
-                }
+                if (outcome === 'accepted') pwaBtn.classList.add('hidden');
                 deferredPrompt = null;
             }
         });
